@@ -65,6 +65,24 @@ Language Lessons/
 Names such as `English Class 1` are not detected because the number is not at
 the beginning.
 
+## Supported file formats
+
+GPA Helper searches inside the following files:
+
+| Category | Extensions | Notes |
+| --- | --- | --- |
+| Plain text | `.txt`, `.text`, `.log` | Standard UTF-8 text files; invalid characters are safely replaced |
+| Markdown | `.md` | Markdown formatting is searched as text |
+| Spreadsheets and lists | `.csv`, `.tsv` | Searches the text stored in every row and column |
+| PDF | `.pdf` | Searches embedded text; image-only scans require OCR and are not currently supported |
+| Microsoft Word | `.docx` | Searches paragraphs and table cells |
+| OpenDocument | `.odt` | Searches document paragraphs |
+| Rich Text Format | `.rtf` | Searches text after removing RTF formatting |
+| Legacy Microsoft Word | `.doc` | Requires antiword, LibreOffice, or macOS `textutil` |
+
+Searches are case-insensitive. Password-protected, corrupted, or otherwise
+unreadable documents are skipped and included in the search status count.
+
 ## Use GPA Helper
 
 1. Launch the application.
@@ -73,9 +91,6 @@ the beginning.
 4. Enter a word or phrase on the right to search all supported notes and documents.
 5. Double-click a search result to open it in your default text editor.
 
-Searches are case-insensitive. Supported formats are `.txt`, `.text`, `.md`,
-`.csv`, `.tsv`, `.log`, `.pdf`, `.docx`, `.odt`, and `.rtf`. Legacy `.doc`
-files are searched when antiword, LibreOffice, or macOS `textutil` is available.
 The application only reads lesson names and documents; it does not rename,
 move, or delete lesson content.
 
