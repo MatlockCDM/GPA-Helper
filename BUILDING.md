@@ -62,9 +62,8 @@ set `MACOS_SIGN_IDENTITY` to an Apple Developer ID Application certificate
 before building, then notarize the DMG with Apple's `notarytool`. Apple requires
 a paid Developer Program identity for that final signing and notarization step.
 
-## Current local build status
+## Published packages
 
-The Linux standalone executable has been built at `dist/GPAHelper`. The final
-Flatpak bundle needs Flatpak Builder and the Freedesktop runtime; if those are
-not installed locally, the automated Ubuntu build creates it instead. Windows
-and macOS packages are intentionally produced on their native workflow runners.
+Successful tagged builds are published on the repository's Releases page.
+Windows and macOS packages are intentionally produced on their native workflow
+runners; the Linux Flatpak can also be built locally with the command above.

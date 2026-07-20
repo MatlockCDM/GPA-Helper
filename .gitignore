@@ -4,6 +4,7 @@ __pycache__/
 config.txt
 build/
 dist/
+Installers/
 GPA Executable/folder_browser.exe
 flatpak-build/
 flatpak-repo/
