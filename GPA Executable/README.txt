@@ -69,6 +69,12 @@ If you have Python installed and want to run the script manually:
 - Click a folder's **button** to open it.  
 - The button will turn **yellow** to show that it has been opened.  
 
+### **Searching Notes and Documents**
+- Search is case-insensitive and supports `.txt`, `.text`, `.md`, `.csv`,
+  `.tsv`, `.log`, `.pdf`, `.docx`, `.odt`, and `.rtf` files.
+- Legacy `.doc` files require antiword, LibreOffice, or macOS `textutil`.
+- Double-click a result to open it in the default application.
+
 ---
 
 ## **📌 Folder Naming Guidelines**

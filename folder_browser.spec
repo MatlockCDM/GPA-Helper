@@ -51,7 +51,7 @@ if system == "Darwin":
         bundle_identifier="org.gpahelper.GPAHelper",
         info_plist={
             "CFBundleDisplayName": "GPA Helper",
-            "CFBundleShortVersionString": "1.0.0",
+            "CFBundleShortVersionString": "1.1.0",
             "NSHighResolutionCapable": True,
         },
     )

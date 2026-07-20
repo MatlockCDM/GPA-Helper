@@ -2,8 +2,10 @@ import os
 import platform
 import queue
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import tkinter as tk
 from pathlib import Path
@@ -12,6 +14,9 @@ from tkinter import filedialog, messagebox, ttk
 
 APP_NAME = "GPA Helper"
 REVIEW_INTERVALS = (1, 3, 5, 10, 20, 40, 105, 365)
+PLAIN_TEXT_EXTENSIONS = {".txt", ".text", ".md", ".csv", ".tsv", ".log"}
+DOCUMENT_EXTENSIONS = {".pdf", ".doc", ".docx", ".odt", ".rtf"}
+SUPPORTED_EXTENSIONS = PLAIN_TEXT_EXTENSIONS | DOCUMENT_EXTENSIONS
 LEGACY_CONFIG_FILE = Path(__file__).resolve().with_name("config.txt")
 
 COLORS = {
@@ -72,6 +77,73 @@ def review_folders(folder_numbers):
         if newest - interval in folder_numbers
     )
     return [(number, folder_numbers[number]) for number in selected]
+
+
+class UnsupportedDocumentError(Exception):
+    """Raised when an optional system converter is needed for a document."""
+
+
+def _legacy_doc_text(path):
+    """Extract old binary Word documents using an available system converter."""
+    antiword = shutil.which("antiword")
+    if antiword:
+        result = subprocess.run(
+            [antiword, path], capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=60, check=True
+        )
+        return result.stdout
+
+    if platform.system() == "Darwin" and shutil.which("textutil"):
+        result = subprocess.run(
+            ["textutil", "-convert", "txt", "-stdout", path],
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+            timeout=60, check=True
+        )
+        return result.stdout
+
+    office = shutil.which("soffice") or shutil.which("libreoffice")
+    if office:
+        with tempfile.TemporaryDirectory() as output_directory:
+            subprocess.run(
+                [office, "--headless", "--convert-to", "txt:Text", "--outdir",
+                 output_directory, path],
+                capture_output=True, timeout=60, check=True
+            )
+            output = Path(output_directory) / f"{Path(path).stem}.txt"
+            if output.exists():
+                return output.read_text(encoding="utf-8", errors="replace")
+
+    raise UnsupportedDocumentError(
+        "Legacy .doc search requires antiword, LibreOffice, or macOS textutil."
+    )
+
+
+def searchable_text(path):
+    """Return text extracted from a supported note or document file."""
+    extension = Path(path).suffix.lower()
+    if extension in PLAIN_TEXT_EXTENSIONS:
+        return Path(path).read_text(encoding="utf-8", errors="replace")
+    if extension == ".pdf":
+        from pypdf import PdfReader
+        return "\n".join(page.extract_text() or "" for page in PdfReader(path).pages)
+    if extension == ".docx":
+        from docx import Document
+        document = Document(path)
+        content = [paragraph.text for paragraph in document.paragraphs]
+        content.extend(cell.text for table in document.tables for row in table.rows for cell in row.cells)
+        return "\n".join(content)
+    if extension == ".odt":
+        from odf import teletype
+        from odf.opendocument import load
+        from odf.text import P
+        document = load(path)
+        return "\n".join(teletype.extractText(paragraph) for paragraph in document.getElementsByType(P))
+    if extension == ".rtf":
+        from striprtf.striprtf import rtf_to_text
+        return rtf_to_text(Path(path).read_text(encoding="utf-8", errors="replace"))
+    if extension == ".doc":
+        return _legacy_doc_text(path)
+    raise UnsupportedDocumentError(f"Unsupported file type: {extension or 'none'}")
 
 
 class FolderBrowserApp:
@@ -216,7 +288,7 @@ class FolderBrowserApp:
 
         ttk.Label(search_panel, text="Search notes", style="Section.TLabel").pack(anchor="w")
         ttk.Label(
-            search_panel, text="Find text inside every .txt file in this folder",
+            search_panel, text="Find text across notes, PDFs, and documents",
             style="Muted.TLabel"
         ).pack(anchor="w", pady=(2, 12))
 
@@ -348,6 +420,7 @@ class FolderBrowserApp:
     def _scan_text_files(self, base_directory, needle, generation):
         matches = []
         unreadable = 0
+        unsupported = 0
 
         def count_walk_error(_error):
             nonlocal unreadable
@@ -355,27 +428,28 @@ class FolderBrowserApp:
 
         for root, _, files in os.walk(base_directory, onerror=count_walk_error):
             for filename in files:
-                if not filename.lower().endswith(".txt"):
+                if Path(filename).suffix.lower() not in SUPPORTED_EXTENSIONS:
                     continue
                 path = os.path.join(root, filename)
                 try:
-                    with open(path, "r", encoding="utf-8", errors="replace") as file:
-                        if any(needle in line.casefold() for line in file):
-                            matches.append(path)
-                except OSError:
+                    if needle in searchable_text(path).casefold():
+                        matches.append(path)
+                except UnsupportedDocumentError:
+                    unsupported += 1
+                except Exception:
                     unreadable += 1
 
-        self.search_results.put((generation, matches, unreadable))
+        self.search_results.put((generation, matches, unreadable, unsupported))
 
     def _poll_search_results(self):
         try:
-            generation, matches, unreadable = self.search_results.get_nowait()
+            generation, matches, unreadable, unsupported = self.search_results.get_nowait()
         except queue.Empty:
             self.root.after(50, self._poll_search_results)
             return
-        self._finish_search(generation, matches, unreadable)
+        self._finish_search(generation, matches, unreadable, unsupported)
 
-    def _finish_search(self, generation, matches, unreadable):
+    def _finish_search(self, generation, matches, unreadable, unsupported):
         if generation != self.search_generation:
             return
         self.search_button.state(["!disabled"])
@@ -384,6 +458,8 @@ class FolderBrowserApp:
         status = f"{count} matching file{'s' if count != 1 else ''}. Double-click to open."
         if unreadable:
             status += f" {unreadable} unreadable file{'s' if unreadable != 1 else ''} skipped."
+        if unsupported:
+            status += f" {unsupported} legacy .doc file{'s' if unsupported != 1 else ''} need a converter."
         self.status_label.configure(text=status)
 
     def _display_results(self, paths):

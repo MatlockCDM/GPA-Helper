@@ -21,7 +21,8 @@ queue. It automatically shows the newest lesson and any available lessons from
 
 - Open review folders directly from the dashboard.
 - See which folders you have already opened during the session.
-- Search the contents of every `.txt` note without freezing the interface.
+- Search plain text, Markdown, CSV, PDF, Word, OpenDocument, and RTF files
+  without freezing the interface.
 - Open a matching note by double-clicking its search result.
 - Remember the last lesson directory you selected.
 - Run locally without an internet connection.
@@ -69,11 +70,14 @@ the beginning.
 1. Launch the application.
 2. Select **Choose folder** and pick the directory containing your lessons.
 3. Open lessons from the review queue on the left.
-4. Enter a word or phrase on the right to search all text notes.
+4. Enter a word or phrase on the right to search all supported notes and documents.
 5. Double-click a search result to open it in your default text editor.
 
-Searches are case-insensitive. The application only reads lesson names and text
-files; it does not rename, move, or delete lesson content.
+Searches are case-insensitive. Supported formats are `.txt`, `.text`, `.md`,
+`.csv`, `.tsv`, `.log`, `.pdf`, `.docx`, `.odt`, and `.rtf`. Legacy `.doc`
+files are searched when antiword, LibreOffice, or macOS `textutil` is available.
+The application only reads lesson names and documents; it does not rename,
+move, or delete lesson content.
 
 ## Run from source
 
