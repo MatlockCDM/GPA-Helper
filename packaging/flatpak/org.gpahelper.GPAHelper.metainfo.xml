@@ -11,6 +11,7 @@
   </description>
   <launchable type="desktop-id">org.gpahelper.GPAHelper.desktop</launchable>
   <releases>
+    <release version="1.1.1" date="2026-07-20"/>
     <release version="1.1.0" date="2026-07-20">
       <description>
         <p>Adds search support for PDF, Word, OpenDocument, RTF, Markdown,
