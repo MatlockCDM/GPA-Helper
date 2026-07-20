@@ -1,0 +1,80 @@
+name: Build installers
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Test
+        run: python -m unittest -v
+      - name: Build Windows executable
+        shell: pwsh
+        run: ./scripts/build_windows.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GPAHelper-Windows
+          path: dist/GPAHelper.exe
+
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Test
+        run: python -m unittest -v
+      - name: Install Flatpak tools and runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+      - name: Build Linux Flatpak
+        run: ./scripts/build_linux.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GPAHelper-Linux
+          path: dist/GPAHelper.flatpak
+
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Test
+        run: python -m unittest -v
+      - name: Build macOS disk image
+        run: ./scripts/build_macos.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GPAHelper-macOS
+          path: dist/GPAHelper-macOS.dmg
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, linux, macos]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-files
+          merge-multiple: true
+      - name: Publish native installers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" release-files/* --generate-notes --title "GPA Helper $GITHUB_REF_NAME"

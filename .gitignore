@@ -1,0 +1,14 @@
+.build-venv/
+__pycache__/
+*.py[cod]
+config.txt
+build/
+dist/
+GPA Executable/folder_browser.exe
+flatpak-build/
+flatpak-repo/
+.flatpak-builder/
+packaging/flatpak/GPAHelper
+packaging/flatpak/icon.png
+packaging/flatpak/icon-128.png
+packaging/flatpak/icon-256.png

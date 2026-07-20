@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=GPA Helper
+Comment=Open and review spaced language lessons
+Exec=GPAHelper
+Icon=org.gpahelper.GPAHelper
+Categories=Education;
+Terminal=false

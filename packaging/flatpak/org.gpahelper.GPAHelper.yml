@@ -1,0 +1,32 @@
+app-id: org.gpahelper.GPAHelper
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: GPAHelper
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=fallback-x11
+  - --device=dri
+  - --filesystem=home
+  - --talk-name=org.freedesktop.portal.Desktop
+modules:
+  - name: gpa-helper
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 GPAHelper /app/bin/GPAHelper
+      - install -Dm644 org.gpahelper.GPAHelper.desktop /app/share/applications/org.gpahelper.GPAHelper.desktop
+      - install -Dm644 org.gpahelper.GPAHelper.metainfo.xml /app/share/metainfo/org.gpahelper.GPAHelper.metainfo.xml
+      - install -Dm644 icon-128.png /app/share/icons/hicolor/128x128/apps/org.gpahelper.GPAHelper.png
+      - install -Dm644 icon-256.png /app/share/icons/hicolor/256x256/apps/org.gpahelper.GPAHelper.png
+    sources:
+      - type: file
+        path: GPAHelper
+      - type: file
+        path: org.gpahelper.GPAHelper.desktop
+      - type: file
+        path: org.gpahelper.GPAHelper.metainfo.xml
+      - type: file
+        path: icon-128.png
+      - type: file
+        path: icon-256.png

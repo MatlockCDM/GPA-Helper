@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.gpahelper.GPAHelper</id>
+  <name>GPA Helper</name>
+  <summary>Open and review spaced language lessons</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>GPA Helper finds numbered lesson folders, builds a spaced-review queue,
+    and searches text notes stored in those lessons.</p>
+  </description>
+  <launchable type="desktop-id">org.gpahelper.GPAHelper.desktop</launchable>
+  <releases>
+    <release version="1.0.0" date="2026-07-20"/>
+  </releases>
+</component>
